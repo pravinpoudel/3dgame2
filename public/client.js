@@ -6,7 +6,18 @@ let scene, camera, renderer, hemiLight, spotLight;
 
 function main() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+
+  let cubeTexture = new THREE.CubeTextureLoader()
+    .setPath("images/skybox1/greenery/")
+    .load([
+      "meadow_ft.jpg",
+      "meadow_bk.jpg",
+      "meadow_up.jpg",
+      "meadow_dn.jpg",
+      "meadow_rt.jpg",
+      "meadow_lf.jpg",
+    ]);
+  scene.background = cubeTexture;
 
   const windowsWidth = window.innerWidth;
   const windowsHeight = window.innerHeight;
