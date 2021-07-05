@@ -236,16 +236,16 @@ class CarInputController {
       }
     }
     document.onkeyup = function(keyEvent){
-      if  (keyEvent.key == 'a'){
+      if  (keyEvent.key == 'a' && car.direction.x == -1){
         car.direction.x = 0
       }
-      if  (keyEvent.key == 's'){
+      if  (keyEvent.key == 's' && car.direction.z == 1){
         car.direction.z = 0
       }
-      if  (keyEvent.key == 'd'){
+      if  (keyEvent.key == 'd' && car.direction.x == 1){
         car.direction.x = 0
       }
-      if  (keyEvent.key == 'w'){
+      if  (keyEvent.key == 'w' && car.direction.z == -1){
         car.direction.z = 0
       }
     }
