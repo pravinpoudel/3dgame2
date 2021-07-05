@@ -16,7 +16,9 @@ class GameEngine {
     requestAnimationFrame(() => this.runGameLoop());
   }
 
-  updateGame() {}
+  updateGame() {
+    this.scene.update()
+  }
 
   updatePhysics() {}
 
@@ -41,9 +43,19 @@ class Scene {
     this.scene.background = skybox.cubeTexture;
   }
 
+  addLight(light) {
+    this.scene.add(light)
+  }
+
   addGameObject(gameObject) {
-    this.scene.add(gameObject)
+    this.scene.add(gameObject.model)
     this.gameObjects.push(gameObject)
+  }
+
+  update() {
+    this.gameObjects.forEach(gameObject => {
+      gameObject.update()
+    });
   }
 }
 
@@ -89,6 +101,27 @@ class Skybox {
   }
 }
 
+class GameObject {
+  constructor(model) {
+    this.model = model
+  }
+
+  update() {}
+}
+
+class Car extends GameObject {
+  constructor(model) {
+    super(model)
+    this.speed = 3
+    this.direction = {x: 0, z: 0}
+  }
+
+  update() {
+    this.model.position.x += this.direction.x * this.speed
+    this.model.position.z += this.direction.z * this.speed
+  }
+}
+
 const windowsWidth = window.innerWidth;
 const windowsHeight = window.innerHeight;
 
@@ -109,7 +142,7 @@ function addSkyBoxToScene(scene) {
 
 function addHemiLight(scene) {
   const hemiLight = new THREE.HemisphereLight(0xffff33, 0x5b573d, 2.5);
-  scene.addGameObject(hemiLight);
+  scene.addLight(hemiLight);
 }
 
 function addSpotLight(scene) {
@@ -118,7 +151,7 @@ function addSpotLight(scene) {
   spotLight1.shadow.bias = -0.0001;
   spotLight1.shadow.mapSize.width = 4096;
   spotLight1.shadow.mapSize.height = 4096;
-  scene.addGameObject(spotLight1);
+  scene.addLight(spotLight1);
 }
 
 function addLightToScene(scene) {
@@ -153,7 +186,9 @@ function addModelToScene(scene) {
         }
       }
     });
-    scene.addGameObject(model);
+    let car = new Car(model)
+    let controller = new CarInputController(car)
+    scene.addGameObject(car);
   })
 }
 
@@ -183,3 +218,37 @@ function main() {
 }
 
 main();
+
+class CarInputController {
+  constructor(car) {
+    document.onkeydown = function(keyEvent){
+      if  (keyEvent.key == 'a'){
+        car.direction.x = -1
+      }
+      if  (keyEvent.key == 's'){
+        car.direction.z = 1
+      }
+      if  (keyEvent.key == 'd'){
+        car.direction.x = 1
+      }
+      if  (keyEvent.key == 'w'){
+        car.direction.z = -1
+      }
+    }
+    document.onkeyup = function(keyEvent){
+      if  (keyEvent.key == 'a'){
+        car.direction.x = 0
+      }
+      if  (keyEvent.key == 's'){
+        car.direction.z = 0
+      }
+      if  (keyEvent.key == 'd'){
+        car.direction.x = 0
+      }
+      if  (keyEvent.key == 'w'){
+        car.direction.z = 0
+      }
+    }
+  }
+}
+
