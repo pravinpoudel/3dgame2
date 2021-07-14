@@ -113,12 +113,13 @@ class Car extends GameObject {
   constructor(model) {
     super(model)
     this.speed = 3
-    this.direction = {x: 0, z: 0}
+    this.direction = {x: 0, y: 0, z: 0}
+    this.angle = {z: 0}
   }
 
   update() {
-    this.model.position.x += this.direction.x * this.speed
-    this.model.position.z += this.direction.z * this.speed
+    this.model.translateOnAxis(this.direction,this.speed) 
+    this.model.rotation.z = this.angle.z
   }
 }
 
@@ -206,6 +207,123 @@ function createScene() {
   return scene
 }
 
+
+class CarInputController {
+  constructor(car) {
+    this.mouseSensitivity = 200
+    this.car = car
+    let k = new KeyboardInputHandler((key, state) => this.listenKeyEvent(key, state))
+    let m = new MouseInputHandler((x, y) => this.listenMouseMovement(x, y))
+  }
+
+  listenMouseMovement(x, y) {
+    this.car.angle.z += x/this.mouseSensitivity
+  }
+
+  moveLeft(state) {
+    if (state == KeyState.DOWN) {
+      this.car.direction.x = -1
+    } else if (this.car.direction.x == -1) {
+      this.car.direction.x = 0
+    }
+  }
+
+  moveRight(state) {
+    if (state == KeyState.DOWN) {
+      this.car.direction.x = 1
+    } else if (this.car.direction.x == 1) {
+      this.car.direction.x = 0
+    }
+  }
+
+  moveDown(state) {
+    if (state == KeyState.DOWN) {
+      this.car.direction.y = 1
+    } else if (this.car.direction.y == 1) {
+      this.car.direction.y = 0
+    }
+  }
+
+  moveUp(state) {
+    if (state == KeyState.DOWN) {
+      this.car.direction.y = -1
+    } else if (this.car.direction.y == -1) {
+      this.car.direction.y = 0
+    }
+  }
+
+  listenKeyEvent(key, state) {
+    if  (key == Keys.LEFT){
+      this.moveLeft(state)
+    }
+    if  (key == Keys.DOWN){
+      this.moveDown(state)
+    }
+    if  (key == Keys.RIGHT){
+      this.moveRight(state)
+    }
+    if  (key == Keys.UP){
+      this.moveUp(state)
+    }
+  }
+}
+
+class MouseInputHandler {
+  constructor(listener) {
+    this.listener = listener
+    this.setupMouseMoveListener()
+    this.lockPointer()
+  }
+
+  setupMouseMoveListener() {
+    let self = this
+    document.onmousemove = function(mouseEvent){
+      self.listener(mouseEvent.movementX, mouseEvent.movementY)
+    }
+  }
+
+  lockPointer() {
+    document.onmousedown = function() {
+      document.body.requestPointerLock()
+    }
+  }
+}
+
+const Keys = {
+  LEFT: 'a',
+  RIGHT: 'd',
+  UP: 'w',
+  DOWN: 's'
+}
+
+const KeyState = {
+  UP: 0,
+  DOWN: 1
+}
+
+class KeyboardInputHandler {
+  constructor(listener) {
+    this.listner = listener
+    this.setupKeyUpListener()
+    this.setupKeyDownListener()
+  }
+
+  setupKeyUpListener() {
+    let self = this
+    document.onkeyup = function(keyEvent){
+      self.listner(keyEvent.key, KeyState.UP)
+    }
+  }
+
+  setupKeyDownListener() {
+    let self = this
+    document.onkeydown = function(keyEvent){
+      self.listner(keyEvent.key, KeyState.DOWN)
+    }
+  }
+}
+
+
 function main() {
   let renderer = createRenderer()
   let scene = createScene()
@@ -218,37 +336,3 @@ function main() {
 }
 
 main();
-
-class CarInputController {
-  constructor(car) {
-    document.onkeydown = function(keyEvent){
-      if  (keyEvent.key == 'a'){
-        car.direction.x = -1
-      }
-      if  (keyEvent.key == 's'){
-        car.direction.z = 1
-      }
-      if  (keyEvent.key == 'd'){
-        car.direction.x = 1
-      }
-      if  (keyEvent.key == 'w'){
-        car.direction.z = -1
-      }
-    }
-    document.onkeyup = function(keyEvent){
-      if  (keyEvent.key == 'a' && car.direction.x == -1){
-        car.direction.x = 0
-      }
-      if  (keyEvent.key == 's' && car.direction.z == 1){
-        car.direction.z = 0
-      }
-      if  (keyEvent.key == 'd' && car.direction.x == 1){
-        car.direction.x = 0
-      }
-      if  (keyEvent.key == 'w' && car.direction.z == -1){
-        car.direction.z = 0
-      }
-    }
-  }
-}
-
