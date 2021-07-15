@@ -1,38 +1,38 @@
 class GameEngine {
-  constructor(scene, renderer, camera){
-    this.scene = scene
-    this.renderer = renderer
-    this.camera = camera
+  constructor(scene, renderer, camera) {
+    this.scene = scene;
+    this.renderer = renderer;
+    this.camera = camera;
   }
 
   run() {
-    this.runGameLoop()
+    this.runGameLoop();
   }
 
   runGameLoop() {
-    this.updateGame()
-    this.updatePhysics()
-    this.render()
+    this.updateGame();
+    this.updatePhysics();
+    this.render();
     requestAnimationFrame(() => this.runGameLoop());
   }
 
   updateGame() {
-    this.scene.update()
+    this.scene.update();
   }
 
   updatePhysics() {}
 
   render() {
-    this.renderer.render(this.scene.scene, this.camera)
+    this.renderer.render(this.scene.scene, this.camera);
   }
 }
 
 class Scene {
   constructor(width, height) {
-    this.width = width
-    this.height = height
-    this.gameObjects = []
-    this.createScene()
+    this.width = width;
+    this.height = height;
+    this.gameObjects = [];
+    this.createScene();
   }
 
   createScene() {
@@ -44,27 +44,27 @@ class Scene {
   }
 
   addLight(light) {
-    this.scene.add(light)
+    this.scene.add(light);
   }
 
   addGameObject(gameObject) {
-    this.scene.add(gameObject.model)
-    this.gameObjects.push(gameObject)
+    this.scene.add(gameObject.model);
+    this.gameObjects.push(gameObject);
   }
 
   update() {
-    this.gameObjects.forEach(gameObject => {
-      gameObject.update()
+    this.gameObjects.forEach((gameObject) => {
+      gameObject.update();
     });
   }
 }
 
 class Renderer {
   constructor(width, height) {
-    this.createRenderer()
-    this.setupSize(width, height)
-    this.enableShadowMap()
-    this.addToDocument()
+    this.createRenderer();
+    this.setupSize(width, height);
+    this.enableShadowMap();
+    this.addToDocument();
   }
 
   setupSize(width, height) {
@@ -74,7 +74,7 @@ class Renderer {
   enableShadowMap() {
     this.renderer.shadowMap.enabled = true;
   }
-  
+
   createRenderer() {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
   }
@@ -95,15 +95,13 @@ class Renderer {
 
 class Skybox {
   constructor(path, images) {
-    this.cubeTexture = new THREE.CubeTextureLoader()
-    .setPath(path)
-    .load(images);
+    this.cubeTexture = new THREE.CubeTextureLoader().setPath(path).load(images);
   }
 }
 
 class GameObject {
   constructor(model) {
-    this.model = model
+    this.model = model;
   }
 
   update() {}
@@ -111,24 +109,23 @@ class GameObject {
 
 class Car extends GameObject {
   constructor(model) {
-    super(model)
-    this.speed = 3
-    this.direction = {x: 0, y: 0, z: 0}
-    this.angle = {z: 0}
+    super(model);
+    this.speed = 1;
+    this.direction = { x: 0, y: 0, z: 0 };
+    this.angle = { z: 0 };
   }
 
   update() {
-    this.model.translateOnAxis(this.direction,this.speed) 
-    this.model.rotation.z = this.angle.z
+    this.model.translateOnAxis(this.direction, this.speed);
+    this.model.rotation.z = this.angle.z;
   }
 }
 
 const windowsWidth = window.innerWidth;
 const windowsHeight = window.innerHeight;
 
-
 function addSkyBoxToScene(scene) {
-  let path = "images/skybox1/greenery/"
+  let path = "images/skybox1/greenery/";
   let images = [
     "meadow_ft.jpg",
     "meadow_bk.jpg",
@@ -136,9 +133,9 @@ function addSkyBoxToScene(scene) {
     "meadow_dn.jpg",
     "meadow_rt.jpg",
     "meadow_lf.jpg",
-  ]
-  let skybox = new Skybox(path, images)
-  scene.addSkyBox(skybox)
+  ];
+  let skybox = new Skybox(path, images);
+  scene.addSkyBox(skybox);
 }
 
 function addHemiLight(scene) {
@@ -156,16 +153,16 @@ function addSpotLight(scene) {
 }
 
 function addLightToScene(scene) {
-  addHemiLight(scene)
-  addSpotLight(scene)
+  addHemiLight(scene);
+  addSpotLight(scene);
 }
 
 function createCamera() {
   const aspect = windowsWidth / windowsHeight;
   let camera = new THREE.PerspectiveCamera(90, aspect, 0.1, 40000);
-  camera.position.set(-3000, 200, 1000);
+  camera.position.set(4, 4, 20);
 
-  return camera
+  return camera;
 }
 
 function setupCameraControl(camera, renderer) {
@@ -174,9 +171,9 @@ function setupCameraControl(camera, renderer) {
 }
 
 function addModelToScene(scene) {
-  new THREE.GLTFLoader().load("models/iguana/scene.gltf", (result) => {
+  new THREE.GLTFLoader().load("models/house/scene.gltf", (result) => {
     let model = result.scene.children[0];
-    model.position.set(100.0, 2.0, -3.0);
+    model.position.set(0.0, 0.0, 0.0);
     model.traverse((object1) => {
       if (object1.isMesh) {
         object1.castShadow = true;
@@ -187,152 +184,152 @@ function addModelToScene(scene) {
         }
       }
     });
-    let car = new Car(model)
-    let controller = new CarInputController(car)
+    let car = new Car(model);
+    let controller = new CarInputController(car);
     scene.addGameObject(car);
-  })
+  });
 }
 
 function createRenderer() {
-  let renderer = new Renderer(windowsWidth, windowsHeight)
-  renderer.setupToneMappingWithExposure(2)
-  return renderer
+  let renderer = new Renderer(windowsWidth, windowsHeight);
+  renderer.setupToneMappingWithExposure(2);
+  return renderer;
 }
 
 function createScene() {
-  let scene = new Scene(windowsWidth, windowsHeight)
-  addLightToScene(scene)
-  addSkyBoxToScene(scene)
-  addModelToScene(scene)
-  return scene
+  let scene = new Scene(windowsWidth, windowsHeight);
+  addLightToScene(scene);
+  addSkyBoxToScene(scene);
+  addModelToScene(scene);
+  return scene;
 }
-
 
 class CarInputController {
   constructor(car) {
-    this.mouseSensitivity = 200
-    this.car = car
-    let k = new KeyboardInputHandler((key, state) => this.listenKeyEvent(key, state))
-    let m = new MouseInputHandler((x, y) => this.listenMouseMovement(x, y))
+    this.mouseSensitivity = 200;
+    this.car = car;
+    let k = new KeyboardInputHandler((key, state) =>
+      this.listenKeyEvent(key, state)
+    );
+    let m = new MouseInputHandler((x, y) => this.listenMouseMovement(x, y));
   }
 
   listenMouseMovement(x, y) {
-    this.car.angle.z += x/this.mouseSensitivity
+    this.car.angle.z += x / this.mouseSensitivity;
   }
 
   moveLeft(state) {
     if (state == KeyState.DOWN) {
-      this.car.direction.x = -1
+      this.car.direction.x = -1;
     } else if (this.car.direction.x == -1) {
-      this.car.direction.x = 0
+      this.car.direction.x = 0;
     }
   }
 
   moveRight(state) {
     if (state == KeyState.DOWN) {
-      this.car.direction.x = 1
+      this.car.direction.x = 1;
     } else if (this.car.direction.x == 1) {
-      this.car.direction.x = 0
+      this.car.direction.x = 0;
     }
   }
 
   moveDown(state) {
     if (state == KeyState.DOWN) {
-      this.car.direction.y = 1
+      this.car.direction.y = 1;
     } else if (this.car.direction.y == 1) {
-      this.car.direction.y = 0
+      this.car.direction.y = 0;
     }
   }
 
   moveUp(state) {
     if (state == KeyState.DOWN) {
-      this.car.direction.y = -1
+      this.car.direction.y = -1;
     } else if (this.car.direction.y == -1) {
-      this.car.direction.y = 0
+      this.car.direction.y = 0;
     }
   }
 
   listenKeyEvent(key, state) {
-    if  (key == Keys.LEFT){
-      this.moveLeft(state)
+    if (key == Keys.LEFT) {
+      this.moveLeft(state);
     }
-    if  (key == Keys.DOWN){
-      this.moveDown(state)
+    if (key == Keys.DOWN) {
+      this.moveDown(state);
     }
-    if  (key == Keys.RIGHT){
-      this.moveRight(state)
+    if (key == Keys.RIGHT) {
+      this.moveRight(state);
     }
-    if  (key == Keys.UP){
-      this.moveUp(state)
+    if (key == Keys.UP) {
+      this.moveUp(state);
     }
   }
 }
 
 class MouseInputHandler {
   constructor(listener) {
-    this.listener = listener
-    this.setupMouseMoveListener()
-    this.lockPointer()
+    this.listener = listener;
+    this.setupMouseMoveListener();
+    this.lockPointer();
   }
 
   setupMouseMoveListener() {
-    let self = this
-    document.onmousemove = function(mouseEvent){
-      self.listener(mouseEvent.movementX, mouseEvent.movementY)
-    }
+    let self = this;
+    document.onmousemove = function (mouseEvent) {
+      self.listener(mouseEvent.movementX, mouseEvent.movementY);
+    };
   }
 
   lockPointer() {
-    document.onmousedown = function() {
-      document.body.requestPointerLock()
-    }
+    document.onmousedown = function () {
+      document.body.requestPointerLock();
+    };
   }
 }
 
 const Keys = {
-  LEFT: 'a',
-  RIGHT: 'd',
-  UP: 'w',
-  DOWN: 's'
-}
+  LEFT: "a",
+  RIGHT: "d",
+  UP: "w",
+  DOWN: "s",
+};
 
 const KeyState = {
   UP: 0,
-  DOWN: 1
-}
+  DOWN: 1,
+};
 
 class KeyboardInputHandler {
   constructor(listener) {
-    this.listner = listener
-    this.setupKeyUpListener()
-    this.setupKeyDownListener()
+    this.listner = listener;
+    this.setupKeyUpListener();
+    this.setupKeyDownListener();
   }
 
   setupKeyUpListener() {
-    let self = this
-    document.onkeyup = function(keyEvent){
-      self.listner(keyEvent.key, KeyState.UP)
-    }
+    let self = this;
+    document.onkeyup = function (keyEvent) {
+      self.listner(keyEvent.key, KeyState.UP);
+    };
   }
 
   setupKeyDownListener() {
-    let self = this
-    document.onkeydown = function(keyEvent){
-      self.listner(keyEvent.key, KeyState.DOWN)
-    }
+    let self = this;
+    document.onkeydown = function (keyEvent) {
+      self.listner(keyEvent.key, KeyState.DOWN);
+    };
   }
 }
 
-
 function main() {
-  let renderer = createRenderer()
-  let scene = createScene()
-  let camera = createCamera()
+  let renderer = createRenderer();
+  let scene = createScene();
+  let camera = createCamera();
 
-  setupCameraControl(camera, renderer)
+  setupCameraControl(camera, renderer);
 
-  let engine = new GameEngine(scene, renderer, camera)
-  engine.run()
+  let engine = new GameEngine(scene, renderer, camera);
+  engine.run();
 }
 
 main();
