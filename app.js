@@ -6,7 +6,7 @@ const path = require("path");
 
 const port = process.env.PORT || 3000;
 
-app.use("/scripts", express.static(path.join(__dirname, "/node_modules/")));
+// app.use("/scripts", express.static(path.join(__dirname, "/node_modules/")));
 app.use(express.static(path.join(__dirname, "/public")));
 
 // app.use("/build", express.static(path.join(__dirname, "node_modules/three/build")));

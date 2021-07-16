@@ -287,18 +287,6 @@ class MouseInputHandler {
   }
 }
 
-const Keys = {
-  LEFT: "a",
-  RIGHT: "d",
-  UP: "w",
-  DOWN: "s",
-};
-
-const KeyState = {
-  UP: 0,
-  DOWN: 1,
-};
-
 class KeyboardInputHandler {
   constructor(listener) {
     this.listner = listener;

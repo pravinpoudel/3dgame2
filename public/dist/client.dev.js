@@ -406,17 +406,6 @@ function () {
   return MouseInputHandler;
 }();
 
-var Keys = {
-  LEFT: "a",
-  RIGHT: "d",
-  UP: "w",
-  DOWN: "s"
-};
-var KeyState = {
-  UP: 0,
-  DOWN: 1
-};
-
 var KeyboardInputHandler =
 /*#__PURE__*/
 function () {
