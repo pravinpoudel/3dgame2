@@ -19,13 +19,13 @@ function main() {
   const controls = new OrbitControls(camera, canvas);
   controls.update();
 
+  const globalValues = {
+    time:0,
+    delta:0
+  }
+
   const manager = new THREE.LoadingManager();
   manager.onLoad = init;
-
-  function init() {
-    manageAnimation();
-    console.log("all loaded");
-  }
 
   const models = {
     pig: {
@@ -68,6 +68,135 @@ function main() {
         model.animationClip[value.name] = model.gltf.animations[index];
       });
     }
+  }
+
+// this is logic of @gregman to store the added and removed gameobject
+// in queue rather than updating at the same instance to avoid runtime crash
+
+  class WorldObjectManger {
+    constructor() {
+      this.gameObjects = [];
+      this.removeQueque = {};
+      this.addQueque = [];
+    }
+    createGameObject(parentObject, name) {
+      this.gameObject = new GameObject(parentObject, name);
+      this.gameObjects.push(this.gameObject);
+      return gameObject;
+    }
+
+    removeGameObject(gameObject) {
+      this.removeQueque.add(gameObject);
+    }
+
+    updateQueue(){
+      if(this.removeQueque.length >0){
+        // logic to remove an element, need efficient way to remove an object by comparing
+        this.removeQueque = [];
+      }
+      if(this.addQueque.length>0){
+        this.gameObjects.push(...this.addQueque);
+        this.addQueque = [];
+      }
+    }
+
+    update() {
+      this.updateQueue();
+      this.gameObjects.forEach((gameObjects)=>{
+        gameObject.update();
+      });
+
+    }
+  }
+
+  const worldObjectManager = new WorldObjectManger();
+
+  const generateHash = (string) => {
+    var hash = 0;
+    if (string.length == 0) return hash;
+    for (i = 0; i < string.length; i++) {
+      char = string.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return hash;
+  };
+
+  class GameObject {
+    constructor(parent, objectName) {
+      this.name = objectName;
+      this.components = new Array();
+      this.objectRoot = new THREE.Object3D();
+      parent.add(this.objectRoot);
+    }
+
+    addComp(ComponentName) {
+      // create component in advance and pass
+      // if (!component.componentID) {
+      //   console.warn("this is not an instance of component");
+      //   return this;
+      // }
+      // component.entity = this;
+      // this.componenets[componentName] = component;
+      // return this;
+
+      const component = new ComponentName(this, ...args);
+      this.components.push(component);
+      return component;
+    }
+
+    getComponent() {}
+
+    removeComponent() {}
+
+    update() {
+      this.components.forEach((component) => {
+        component.update();
+      });
+    }
+  }
+
+  class Component {
+    constructor(entity) {
+      this.componentID = generateHash(string);
+      this.gameObject = entity;
+    }
+  }
+
+  class SkinInstance extends Component {
+    constructor(entity, model) {
+      super(entity);
+      this.model = model;
+      this.clonedScene = SkeletonUtils.clone(this.model.gltf.scene);
+      this.mixter = new THREE.AnimationMixter(this.clonedScene);
+      entity.objectRoot.add(this.clonedScene);
+      this.actions = {};
+    }
+    setActiveAnimation(animationName) {
+      const animationClip = this.model.animations[animationName];
+      if (!animationClip) {
+        console.warn("desired animation clip is not found in animations list");
+        return;
+      }
+      const action = this.mixter.clipAction(animationClip);
+      this.actions[animationName] = action;
+      Object.values(actions).forEach((action) => {
+        action.enabled = false;
+      });
+      action.enabled = true;
+      action.reset();
+      action.play();
+    }
+    update() {
+      this.mixter.update(timeUpdate);
+    }
+  }
+  function init() {
+    manageAnimation();
+
+    const gameObject = new WorldObjectManger();
+    gameObject.add(Player);
+
   }
 }
 
