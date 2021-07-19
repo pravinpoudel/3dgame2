@@ -45,29 +45,28 @@ function main() {
   };
 
   let managedModel = new LoadModel(models, initialize);
-  managedModel.manageAnimation();
-
-  const player = new Player(scene, "boy");
+  let player;
 
   function initialize() {
     loaderElement.style.display = "none";
-    manageAnimation();
-    const playerObject = gameObjectManager.createGameObject(scene, "player");
-    playerObject.addComp(Player);
+    managedModel.manageAnimation();
+    player = new Player(scene, models, "boy");
+    player.setActiveAnimation("Run");
     draw();
   }
   resizeRendererToDisplaySize(renderer);
 
   let clock = new THREE.Clock();
+
   function draw(now) {
     const delta = clock.getDelta();
-    globalValues.deltaTime = delta;
+    globalValues.deltaTime = Math.min(delta, 0.0900);
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-    gameObjectManager.update();
+    player.update(globalValues.deltaTime);
     renderer.render(scene, camera);
     requestAnimationFrame(draw);
   }

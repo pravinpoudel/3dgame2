@@ -1,9 +1,8 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.128.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js";
-import models from "/constant/constant.js";
 
 class LoadModel{
-  constructor(callback) {
+  constructor(models, callback) {
     this.models = models;
     const manager = new THREE.LoadingManager();
     manager.onLoad = callback;
@@ -14,11 +13,10 @@ class LoadModel{
       });
     }
   }
-
   manageAnimation() {
     for (const model of Object.values(this.models)) {
       model.animationClip = {};
-      console.log(model.gltf)
+      console.log(model)
       model.gltf.animations.forEach((value, index) => {
         model.animationClip[value.name] = model.gltf.animations[index];
       });
