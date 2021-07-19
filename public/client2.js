@@ -1,21 +1,26 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.128.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js";
+import { GLTFLoader } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js";
 import { SkeletonUtils } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/utils/SkeletonUtils.js";
 
 function main() {
+  
   const canvas = document.getElementById("main-canvas");
   const renderer = new THREE.WebGLRenderer({ canvas });
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#aaaaaa");
 
-  const ambientLight = new THREE.AmbientLight(0x111111);
+  let loaderElement = document.getElementsByClassName("loader")[0];
+
+{
+  const ambientLight = new THREE.AmbientLight(0xaaaaaa);
   scene.add(ambientLight);
 
   const dirLight = new THREE.DirectionalLight(0xffffff);
   dirLight.position.set(0, 200, 100);
   scene.add(dirLight);
+}
 
   const windowsWidth = window.innerWidth;
   const windowsHeight = window.innerHeight;
@@ -33,31 +38,10 @@ function main() {
   }
 
   const manager = new THREE.LoadingManager();
-  manager.onLoad = init;
+  manager.onLoad = initialize;
 
   const models = {
-    pig: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Pig.gltf",
-    },
-    cow: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Cow.gltf",
-    },
-    llama: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Llama.gltf",
-    },
-    pug: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Pug.gltf",
-    },
-    sheep: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Sheep.gltf",
-    },
-    zebra: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Zebra.gltf",
-    },
-    horse: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Horse.gltf",
-    },
-    knight: {
+    boy: {
       url: "https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf",
     },
   };
@@ -149,7 +133,6 @@ function main() {
       // return this;
 
       const component = new ComponentName(this, ...args);
-      console.log(component)
       this.components.push(component);
       return component;
     }
@@ -167,14 +150,12 @@ function main() {
 
   class Component {
     constructor(entity) {
+      // this.componentID = generateHash(string);
       this.gameObject = entity;
-    }
-
-    update(){
     }
   }
 
-  class SkinInstance extends Component {
+  class AnimationPlayer extends Component {
     constructor(entity, model) {
       super(entity);
       this.model = model;
@@ -189,13 +170,13 @@ function main() {
         console.warn("desired animation clip is not found in animations list");
         return;
       }
-     
       Object.values(this.actions).forEach((action) => {
         action.enabled = false;
       });
       const action = this.mixer.clipAction(animationClip);
       this.actions[animationName] = action;
       action.enabled = true;
+      // we are resetting here just to avoid case for the action with completed cycle/loop
       action.reset();
       action.play();
     }
@@ -203,52 +184,52 @@ function main() {
   }
 
   class Player extends Component{
-    constructor(entity){
+    constructor(entity, model){
       super(entity);
-      this.modelData = models.knight;
-      this.modelSkinedInstance = new SkinInstance(entity, this.modelData);
+      this.modelData = models.boy;
+      this.modelSkinedInstance = new AnimationPlayer(entity, this.modelData);
       this.modelSkinedInstance.setActiveAnimation("Run")
     }
     update() {
-      // globalValues.deltaTime = 0.00578;
       this.modelSkinedInstance.mixer.update(globalValues.deltaTime);
-      // console.log(this.modelSkinedInstance.mixer)
     }  
   }
 
   const gameObjectManager = new WorldObjectManger();
 
-  function init() {
-    console.log("all loaded")
+  function initialize() {
+    loaderElement.style.display = "none";
     manageAnimation();
     const playerObject = gameObjectManager.createGameObject(scene, 'player');
     playerObject.addComp(Player);
+    draw();
   }
+  
   function resizeRendererToDisplaySize(renderer) {
     const canvas = renderer.domElement;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    const needResize = canvas.width !== width || canvas.height !== height;
-    if (needResize) {
+    const hasChanged = canvas.width !== width || canvas.height !== height;
+    if (hasChanged) {
       renderer.setSize(width, height, false);
     }
-    return needResize;
+    return hasChanged;
   }
 
+  let clock = new THREE.Clock();
+
   function draw(now){
+    const delta = clock.getDelta();
+    globalValues.deltaTime = delta;
     if (resizeRendererToDisplaySize(renderer)) {
     const canvas = renderer.domElement;
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
     }
-
     gameObjectManager.update();
-    renderer.render(scene, camera)
+    renderer.render(scene, camera);
     requestAnimationFrame(draw);
-
   }
-  requestAnimationFrame(draw);
-
 }
 
 main();

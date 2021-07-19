@@ -2,22 +2,44 @@
 <html>
   <head>
     <title>3D</title>
+    <link href="https://fonts.googleapis.com/css?family=Pacifico&amp;display=swap" rel="stylesheet">
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
       body {
         overflow: hidden;
         margin: 0px;
         padding: 0px;
         box-sizing: border-box;
       }
-
-      #main-canvas{
+      canvas{
         width: 100vw;
         height: 100vh;
+      }
+      .loader{
+        position: absolute;
+        display:flex;
+        top:0;
+        left: 0;
+        align-items:center;
+        justify-content: center;
+        font-size: 32px;
+        width: 100vw;
+        height: 100vh;
+        font-family: "Poppins", sans-serif;
+       background-color: #270d51;
+       color: #d5c8e8
+      /* background-image: linear-gradient(315deg, #7f53ac 0%, #647dee 74%); */
+
       }
     </style>
   </head>
   <body>
-    <canvas id="main-canvas"></canvas>
+    <canvas id="main-canvas">
+    </canvas>
+    <div class="loader">
+    <!-- <image src="images/feather.svg" /> -->
+    <p> _ LOADING ... </p>
+    </div>
     <!-- <script src="scripts/three/build/three.js"></script>
     <script src="scripts/three/examples/js/loaders/GLTFLoader.js"></script>
     <script src="scripts/three/examples/js/controls/OrbitControls.js"></script> -->
