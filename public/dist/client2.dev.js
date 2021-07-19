@@ -4,7 +4,9 @@ var THREE = _interopRequireWildcard(require("https://cdn.skypack.dev/three@0.128
 
 var _OrbitControls = require("https://cdn.skypack.dev/three@0.128.0/examples/jsm/controls/OrbitControls.js");
 
-var _GLTFLoader = require("https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js");
+var _GLTFLoader = require("https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js");
+
+var _SkeletonUtils = require("https://cdn.skypack.dev/three@0.129.0/examples/jsm/utils/SkeletonUtils.js");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
@@ -47,6 +49,14 @@ function main() {
   });
   var scene = new THREE.Scene();
   scene.background = new THREE.Color("#aaaaaa");
+  var loaderElement = document.getElementsByClassName("loader")[0];
+  {
+    var ambientLight = new THREE.AmbientLight(0xaaaaaa);
+    scene.add(ambientLight);
+    var dirLight = new THREE.DirectionalLight(0xffffff);
+    dirLight.position.set(0, 200, 100);
+    scene.add(dirLight);
+  }
   var windowsWidth = window.innerWidth;
   var windowsHeight = window.innerHeight;
   var aspect = windowsWidth / windowsHeight;
@@ -54,31 +64,14 @@ function main() {
   camera.position.set(0, 1.5, 20);
   var controls = new _OrbitControls.OrbitControls(camera, canvas);
   controls.update();
+  var globalValues = {
+    time: 0,
+    deltaTime: 0
+  };
   var manager = new THREE.LoadingManager();
-  manager.onLoad = init;
+  manager.onLoad = initialize;
   var models = {
-    pig: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Pig.gltf"
-    },
-    cow: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Cow.gltf"
-    },
-    llama: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Llama.gltf"
-    },
-    pug: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Pug.gltf"
-    },
-    sheep: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Sheep.gltf"
-    },
-    zebra: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Zebra.gltf"
-    },
-    horse: {
-      url: "https://threejsfundamentals.org/threejs/resources/models/animals/Horse.gltf"
-    },
-    knight: {
+    boy: {
       url: "https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf"
     }
   };
@@ -107,7 +100,9 @@ function main() {
     for (var _i2 = 0, _Object$values2 = Object.values(models); _i2 < _Object$values2.length; _i2++) {
       _loop();
     }
-  }
+  } // this is logic of @gregman to store the added and removed gameobject
+  // in queue rather than updating at the same instance to avoid runtime crash
+
 
   var WorldObjectManger =
   /*#__PURE__*/
@@ -116,17 +111,46 @@ function main() {
       _classCallCheck(this, WorldObjectManger);
 
       this.gameObjects = [];
+      this.removeQueque = {};
+      this.addQueque = [];
     }
 
     _createClass(WorldObjectManger, [{
       key: "createGameObject",
-      value: function createGameObject() {}
+      value: function createGameObject(parentObject, name) {
+        this.gameObject = new GameObject(parentObject, name);
+        this.gameObjects.push(this.gameObject);
+        return this.gameObject;
+      }
     }, {
       key: "removeGameObject",
-      value: function removeGameObject() {}
+      value: function removeGameObject(gameObject) {
+        this.removeQueque.add(gameObject);
+      }
+    }, {
+      key: "updateQueue",
+      value: function updateQueue() {
+        if (this.removeQueque.length > 0) {
+          // logic to remove an element, need efficient way to remove an object by comparing
+          this.removeQueque = [];
+        }
+
+        if (this.addQueque.length > 0) {
+          var _this$gameObjects;
+
+          (_this$gameObjects = this.gameObjects).push.apply(_this$gameObjects, _toConsumableArray(this.addQueque));
+
+          this.addQueque = [];
+        }
+      }
     }, {
       key: "update",
-      value: function update() {}
+      value: function update() {
+        this.updateQueue();
+        this.gameObjects.forEach(function (gameObject) {
+          gameObject.update();
+        });
+      }
     }]);
 
     return WorldObjectManger;
@@ -162,6 +186,10 @@ function main() {
     _createClass(GameObject, [{
       key: "addComp",
       value: function addComp(ComponentName) {
+        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments[_key];
+        }
+
         // create component in advance and pass
         // if (!component.componentID) {
         //   console.warn("this is not an instance of component");
@@ -170,7 +198,7 @@ function main() {
         // component.entity = this;
         // this.componenets[componentName] = component;
         // return this;
-        var component = _construct(ComponentName, [this].concat(_toConsumableArray(args)));
+        var component = _construct(ComponentName, [this].concat(args));
 
         this.components.push(component);
         return component;
@@ -196,61 +224,121 @@ function main() {
   var Component = function Component(entity) {
     _classCallCheck(this, Component);
 
-    this.componentID = generateHash(string);
+    // this.componentID = generateHash(string);
     this.gameObject = entity;
   };
 
-  var SkinInstance =
+  var AnimationPlayer =
   /*#__PURE__*/
   function (_Component) {
-    _inherits(SkinInstance, _Component);
+    _inherits(AnimationPlayer, _Component);
 
-    function SkinInstance(entity, model) {
+    function AnimationPlayer(entity, model) {
       var _this;
 
-      _classCallCheck(this, SkinInstance);
+      _classCallCheck(this, AnimationPlayer);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(SkinInstance).call(this, entity));
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(AnimationPlayer).call(this, entity));
       _this.model = model;
-      _this.clonedScene = SkeletonUtils.clone(_this.model.gltf.scene);
-      _this.mixter = new THREE.AnimationMixter(_this.clonedScene);
+      _this.clonedScene = _SkeletonUtils.SkeletonUtils.clone(_this.model.gltf.scene);
       entity.objectRoot.add(_this.clonedScene);
+      _this.mixer = new THREE.AnimationMixer(_this.clonedScene);
       _this.actions = {};
       return _this;
     }
 
-    _createClass(SkinInstance, [{
+    _createClass(AnimationPlayer, [{
       key: "setActiveAnimation",
       value: function setActiveAnimation(animationName) {
-        var animationClip = this.model.animations[animationName];
+        var animationClip = this.model.animationClip[animationName];
 
         if (!animationClip) {
           console.warn("desired animation clip is not found in animations list");
           return;
         }
 
-        var action = this.mixter.clipAction(animationClip);
-        this.actions[animationName] = action;
-        Object.values(actions).forEach(function (action) {
+        Object.values(this.actions).forEach(function (action) {
           action.enabled = false;
         });
-        action.enabled = true;
+        var action = this.mixer.clipAction(animationClip);
+        this.actions[animationName] = action;
+        action.enabled = true; // we are resetting here just to avoid case for the action with completed cycle/loop
+
         action.reset();
         action.play();
       }
-    }, {
+    }]);
+
+    return AnimationPlayer;
+  }(Component);
+
+  var Player =
+  /*#__PURE__*/
+  function (_Component2) {
+    _inherits(Player, _Component2);
+
+    function Player(entity, model) {
+      var _this2;
+
+      _classCallCheck(this, Player);
+
+      _this2 = _possibleConstructorReturn(this, _getPrototypeOf(Player).call(this, entity));
+      _this2.modelData = models.boy;
+      _this2.modelSkinedInstance = new AnimationPlayer(entity, _this2.modelData);
+
+      _this2.modelSkinedInstance.setActiveAnimation("Run");
+
+      return _this2;
+    }
+
+    _createClass(Player, [{
       key: "update",
       value: function update() {
-        this.mixter.update(timeUpdate);
+        this.modelSkinedInstance.mixer.update(globalValues.deltaTime);
       }
     }]);
 
-    return SkinInstance;
+    return Player;
   }(Component);
 
-  function init() {
+  var gameObjectManager = new WorldObjectManger();
+
+  function initialize() {
+    loaderElement.style.display = "none";
     manageAnimation();
-    var gameObject = new WorldObjectManger();
+    var playerObject = gameObjectManager.createGameObject(scene, "player");
+    playerObject.addComp(Player);
+    draw();
+  }
+
+  function resizeRendererToDisplaySize(renderer) {
+    var canvas = renderer.domElement;
+    var width = canvas.clientWidth;
+    var height = canvas.clientHeight;
+    var hasChanged = canvas.width !== width || canvas.height !== height;
+
+    if (hasChanged) {
+      renderer.setSize(width, height, false);
+    }
+
+    return hasChanged;
+  }
+
+  var clock = new THREE.Clock();
+
+  function draw(now) {
+    var delta = clock.getDelta();
+    globalValues.deltaTime = delta;
+
+    if (resizeRendererToDisplaySize(renderer)) {
+      var _canvas = renderer.domElement;
+      camera.aspect = _canvas.clientWidth / _canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
+
+    gameObjectManager.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(draw);
   }
 }
 
