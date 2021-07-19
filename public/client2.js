@@ -66,7 +66,7 @@ function main() {
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-    player.update(globalValues.deltaTime);
+    player.update(globalValues.deltaTime, camera);
     renderer.render(scene, camera);
     requestAnimationFrame(draw);
   }
