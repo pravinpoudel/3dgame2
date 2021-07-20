@@ -1,3 +1,6 @@
+import KeyboardInputHandler from "/GameEngine/Input/KeyboardInputHandler.js";
+import MouseInputHandler from "/GameEngine/Input/MouseInputHandler.js";
+
 export default class CarInputController {
     constructor(car) {
       this.mouseSensitivity = 200;

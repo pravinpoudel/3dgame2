@@ -1,3 +1,5 @@
+import GameObject from "/GameEngine/GameObject/GameObject.js";
+
 export default class Car extends GameObject {
     constructor(model) {
       super(model);

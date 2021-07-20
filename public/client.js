@@ -1,9 +1,18 @@
-import GameEngine from "./GameEngine/GameEngine";
-import Renderer from "./GameEngine/Renderer";
-import Scene from "./GameEngine/Scene/Scene";
-import Skybox from "./GameEngine/Scene/Skybox";
-import Car from "./Game/Car";
-import CarInputController from "./Game/CarInputController";
+import * as THREE from "https://cdn.skypack.dev/three@0.128.0/build/three.module.js";
+import { OrbitControls } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js";
+
+import {resizeRendererToDisplaySize} from "/helper/main.js"
+
+import GameEngine from "/GameEngine/GameEngine.js";
+import Renderer from "/GameEngine/Renderer.js";
+import Scene from "/GameEngine/Scene/Scene.js";
+import Skybox from "/GameEngine/Scene/Skybox.js";
+import Car from "/Game/Car.js";
+import CarInputController from "./Game/CarInputController.js";
+import GameObjectCreater from "/objectCreator/GameObjectCreater.js";
+import Player from "/animation/Player.js"
+import AnimationManager from "/animation/AnimationManager.js"
 
 const windowsWidth = window.innerWidth;
 const windowsHeight = window.innerHeight;
@@ -44,18 +53,18 @@ function addLightToScene(scene) {
 function createCamera() {
   const aspect = windowsWidth / windowsHeight;
   let camera = new THREE.PerspectiveCamera(90, aspect, 0.1, 40000);
-  camera.position.set(4, 4, 20);
+  camera.position.set(0, 10, 10);
 
   return camera;
 }
 
 function setupCameraControl(camera, renderer) {
-  let control = new THREE.OrbitControls(camera, renderer.renderer.domElement);
+  let control = new OrbitControls(camera, renderer.renderer.domElement);
   control.update();
 }
 
 function addModelToScene(scene) {
-  new THREE.GLTFLoader().load("models/house/scene.gltf", (result) => {
+  new GLTFLoader().load("models/house/scene.gltf", (result) => {
     let model = result.scene.children[0];
     model.position.set(0.0, 0.0, 0.0);
     model.traverse((object1) => {
@@ -82,20 +91,39 @@ function createRenderer() {
 
 function createScene() {
   let scene = new Scene(windowsWidth, windowsHeight);
+
   addLightToScene(scene);
   addSkyBoxToScene(scene);
   addModelToScene(scene);
   return scene;
 }
 
+
+
 function main() {
   let renderer = createRenderer();
   let scene = createScene();
   let camera = createCamera();
+  const manager = new THREE.LoadingManager();
+  const loader = new GLTFLoader(manager);
+  manager.onLoad = initilization;
 
+  let loaderElement = document.getElementsByClassName("loader")[0];
+  
+  const url = "https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf";
+  let player = new GameObjectCreater(Player, url, loader);
+  let animationaList = [];
+  function initilization(){
+    loaderElement.style.display = "none";
+    const animation = new AnimationManager(player.object.gltf);
+    scene.scene.add(animation.rootObject);
+    animation.manageAnimation();
+    animation.setActiveAnimation("Run");
+    animationaList.push(animation);
+  }
   setupCameraControl(camera, renderer);
 
-  let engine = new GameEngine(scene, renderer, camera);
+  let engine = new GameEngine(scene, renderer, camera, animationaList);
   engine.run();
 }
 
