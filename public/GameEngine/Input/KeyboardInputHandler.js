@@ -1,3 +1,5 @@
+import {Keys, KeyState} from "./KeyConstants.js";
+
 export default class KeyboardInputHandler {
     constructor(listener) {
       this.listner = listener;

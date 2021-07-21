@@ -21,13 +21,13 @@ export default class Scene {
     }
   
     addGameObject(gameObject) {
-      this.scene.add(gameObject.model);
+      this.scene.add(gameObject.object);
       this.gameObjects.push(gameObject);
     }
   
-    update() {
+    update(deltaTime) {
       this.gameObjects.forEach((gameObject) => {
-        gameObject.update();
+        gameObject.update(deltaTime);
       });
     }
   }

@@ -1,13 +1,11 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.128.0/build/three.module.js";
 
 export default class GameEngine {
-    constructor(scene, renderer, camera, animationList) {
+    constructor(scene, renderer, camera) {
       this.scene = scene;
       this.renderer = renderer;
       this.camera = camera;
-      this.animationList = animationList;
       this.clock = new THREE.Clock();
-    
     }
   
     run() {
@@ -24,10 +22,7 @@ export default class GameEngine {
     }
 
     updateGame(deltaTime) {
-      this.scene.update();
-      this.animationList.forEach((animation)=>{
-        animation.update(deltaTime);
-      })
+      this.scene.update(deltaTime);
     }
   
     updatePhysics() {}

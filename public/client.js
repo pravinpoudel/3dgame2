@@ -10,9 +10,9 @@ import Scene from "/GameEngine/Scene/Scene.js";
 import Skybox from "/GameEngine/Scene/Skybox.js";
 import Car from "/Game/Car.js";
 import CarInputController from "./Game/CarInputController.js";
-import GameObjectCreater from "/objectCreator/GameObjectCreater.js";
-import Player from "/animation/Player.js"
-import AnimationManager from "/animation/AnimationManager.js"
+// import GameObjectCreater from "/objectCreator/GameObjectCreater.js";
+// import Player from "/animation/Player.js"
+import AnimationManager from "/GameEngine/GameObject/AnimationManager.js"
 
 const windowsWidth = window.innerWidth;
 const windowsHeight = window.innerHeight;
@@ -64,23 +64,18 @@ function setupCameraControl(camera, renderer) {
 }
 
 function addModelToScene(scene) {
-  new GLTFLoader().load("models/house/scene.gltf", (result) => {
-    let model = result.scene.children[0];
-    model.position.set(0.0, 0.0, 0.0);
-    model.traverse((object1) => {
-      if (object1.isMesh) {
-        object1.castShadow = true;
-        object1.receiveShadow = true;
+  const manager = new THREE.LoadingManager();
+  const loader = new GLTFLoader(manager);
 
-        if (object1.material.map) {
-          object1.material.map.anisotropy = 16;
-        }
-      }
-    });
-    let car = new Car(model);
+  let loaderElement = document.getElementsByClassName("loader")[0];
+  const url = "https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf";
+  let carcreator = new CarCreator(url, loader)
+  carcreator.loadModelFromUrl(() => {
+    loaderElement.style.display = "none"
+    let car = carcreator.getCar()
     let controller = new CarInputController(car);
     scene.addGameObject(car);
-  });
+  })
 }
 
 function createRenderer() {
@@ -99,31 +94,35 @@ function createScene() {
 }
 
 
+class CarCreator {
+  constructor(url, loader){
+    this.url = url
+    this.loader = loader
+    this.gltf = null
+  }
+
+  loadModelFromUrl(onLoad) {
+    let self = this
+    this.loader.load(this.url, (gltf) => {
+      self.gltf = gltf
+      onLoad()
+    })
+  }
+
+  getCar() {
+    if(this.gltf != null) {
+      let car = new Car(this.gltf)
+      return car
+    }
+  }
+}
 
 function main() {
   let renderer = createRenderer();
   let scene = createScene();
   let camera = createCamera();
-  const manager = new THREE.LoadingManager();
-  const loader = new GLTFLoader(manager);
-  manager.onLoad = initilization;
 
-  let loaderElement = document.getElementsByClassName("loader")[0];
-  
-  const url = "https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf";
-  let player = new GameObjectCreater(Player, url, loader);
-  let animationaList = [];
-  function initilization(){
-    loaderElement.style.display = "none";
-    const animation = new AnimationManager(player.object.gltf);
-    scene.scene.add(animation.rootObject);
-    animation.manageAnimation();
-    animation.setActiveAnimation("Run");
-    animationaList.push(animation);
-  }
-  setupCameraControl(camera, renderer);
-
-  let engine = new GameEngine(scene, renderer, camera, animationaList);
+  let engine = new GameEngine(scene, renderer, camera);
   engine.run();
 }
 

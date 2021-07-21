@@ -1,5 +1,6 @@
 import KeyboardInputHandler from "/GameEngine/Input/KeyboardInputHandler.js";
 import MouseInputHandler from "/GameEngine/Input/MouseInputHandler.js";
+import { Keys, KeyState } from "../GameEngine/Input/KeyConstants.js";
 
 export default class CarInputController {
     constructor(car) {
@@ -12,7 +13,7 @@ export default class CarInputController {
     }
   
     listenMouseMovement(x, y) {
-      this.car.angle.z += x / this.mouseSensitivity;
+      this.car.angle.y += x / this.mouseSensitivity;
     }
   
     moveLeft(state) {
@@ -33,17 +34,17 @@ export default class CarInputController {
   
     moveDown(state) {
       if (state == KeyState.DOWN) {
-        this.car.direction.y = 1;
-      } else if (this.car.direction.y == 1) {
-        this.car.direction.y = 0;
+        this.car.direction.z = -1;
+      } else if (this.car.direction.z == -1) {
+        this.car.direction.z = 0;
       }
     }
   
     moveUp(state) {
       if (state == KeyState.DOWN) {
-        this.car.direction.y = -1;
-      } else if (this.car.direction.y == -1) {
-        this.car.direction.y = 0;
+        this.car.direction.z = 1;
+      } else if (this.car.direction.z == 1) {
+        this.car.direction.z = 0;
       }
     }
   
