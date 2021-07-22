@@ -1,3 +1,5 @@
+import Car from "./Car.js"
+
 export default class CarCreator {
   constructor(url, loader){
     this.url = url

@@ -20,6 +20,7 @@ export default class Car extends GameObject {
       this.object.translateOnAxis(this.direction, this.speed);
       this.object.rotation.y = this.angle.y;
       this.animationManager.update(deltaTime)
+      this.checkMovement()
     }
 
     checkMovement() {

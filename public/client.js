@@ -2,17 +2,12 @@ import * as THREE from "https://cdn.skypack.dev/three@0.128.0/build/three.module
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.skypack.dev/three@0.128.0/examples/jsm/loaders/GLTFLoader.js";
 
-import {resizeRendererToDisplaySize} from "/helper/main.js"
-
 import GameEngine from "/GameEngine/GameEngine.js";
 import Renderer from "/GameEngine/Renderer.js";
 import Scene from "/GameEngine/Scene/Scene.js";
 import Skybox from "/GameEngine/Scene/Skybox.js";
-import Car from "/Game/Car.js";
 import CarInputController from "./Game/CarInputController.js";
-// import GameObjectCreater from "/objectCreator/GameObjectCreater.js";
-// import Player from "/animation/Player.js"
-import AnimationManager from "/GameEngine/GameObject/AnimationManager.js"
+import CarCreator from "./Game/CarCreator.js"
 
 const windowsWidth = window.innerWidth;
 const windowsHeight = window.innerHeight;
