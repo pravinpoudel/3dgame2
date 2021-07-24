@@ -40,7 +40,7 @@ class AnimationManager{
     this.mixer.update(deltaTime);
   }
 
-  }
-
+}
+ 
 
 export default AnimationManager;
